@@ -1,0 +1,106 @@
+using System;
+using System.Collections;
+
+public class Test {
+    static int [,]data;
+    static bool isCandidate(int row, int col, int n) {
+        // Check for row
+        for(int j=0; j<9; j++)
+            if(n == data[row,j])
+                return false;
+        // Check for column
+        for(int i=0; i<9; i++)
+            if(n == data[i,col])
+                return false;
+        // Check for small square
+        int squareR = (row/3)*3;
+        int squareC = (col/3)*3;
+        for(int i=squareR; i<(squareR+3); i++)
+            for(int j=squareC; j<(squareC+3); j++)
+                if(n == data[i,j])
+                    return false;
+        return true;
+    }
+
+    static void solveSudoku(int row, int col) {
+        if (row == 9)
+            throw new ApplicationException("Solved");
+        else {
+            // Move to next non vacant node
+            while (data[row,col] != 0) {
+                col++;
+                if (col == 9) {
+                    col = 0;
+                    row++;
+                    if (row == 9)
+                        throw new ApplicationException("Solved");
+                }
+            }
+            // Find next candidate
+            for(int num = 1; num < 10; num++) {
+                if(isCandidate(row, col, num)) {
+                    data[row,col] = num;
+                    // Try solving smaller subproblem
+                    if (col < 8)
+                        solveSudoku(row, col + 1);
+                    else
+                        solveSudoku(row + 1, 0);
+                }
+            }
+            // Smaller subproblem didn't get solved so backtrack
+            data[row,col] = 0;
+        }
+    }
+
+    public static void Main() {
+        data = new int[9,9];
+	int i = 0;
+	int j = 0;
+	while(i < 9) {
+		string line = Console.ReadLine();
+		IEnumerator iter = line.GetEnumerator( );
+		while(iter.MoveNext()) {
+			char ch = (char)iter.Current;
+			if(ch == '.') {
+				data[i,j] = 0;
+				j++;
+				if(j>8)
+					j = 0;
+				continue;
+			}
+			if(Char.IsDigit(ch)) {
+				data[i,j] = (int)Char.GetNumericValue(ch);
+				j++;
+				if(j>8)
+					j = 0;
+				continue;
+			}
+		}
+		i++;
+	}
+            /*// Print the input
+            for(int l=0; l<9; l++) {
+                    Console.Write("|");
+                for(int m=0; m<9; m++) {
+                    Console.Write(data[l,m]+"|");
+                }
+                Console.WriteLine();
+            }*/
+
+
+        try {
+            solveSudoku(0, 0);
+        }
+        catch(ApplicationException e) {
+            // Print the output
+            for(int l=0; l<9; l++) {
+                    Console.Write("|");
+                for(int m=0; m<9; m++) {
+                    Console.Write(data[l,m]+"|");
+                }
+                Console.WriteLine();
+            }
+        }
+
+    }
+}
